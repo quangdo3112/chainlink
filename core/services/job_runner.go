@@ -201,23 +201,22 @@ func prepareTaskInput(run *models.JobRun, input models.JSON) (models.JSON, error
 }
 
 func prepareAdapter(
-	taskRun *models.TaskRun,
+	taskSpec models.TaskSpec,
 	data models.JSON,
 	store *store.Store,
 ) (*adapters.PipelineAdapter, error) {
-	taskCopy := taskRun.TaskSpec // deliberately copied to keep mutations local
-
-	merged, err := taskCopy.Params.Merge(data)
+	merged, err := taskSpec.Params.Merge(data)
 	if err != nil {
 		return nil, err
 	}
-	taskCopy.Params = merged
+	taskSpec.Params = merged
 
-	return adapters.For(taskCopy, store)
+	return adapters.For(taskSpec, store)
 }
 
 func executeTask(run *models.JobRun, currentTaskRun *models.TaskRun, store *store.Store) models.RunResult {
-	adapter, err := prepareAdapter(currentTaskRun, run.Overrides.Data, store)
+	taskSpec := currentTaskRun.TaskSpec // deliberately copied to keep mutations local
+	adapter, err := prepareAdapter(taskSpec, run.Overrides.Data, store)
 	if err != nil {
 		currentTaskRun.Result.SetError(err)
 		return currentTaskRun.Result
@@ -229,7 +228,6 @@ func executeTask(run *models.JobRun, currentTaskRun *models.TaskRun, store *stor
 		return currentTaskRun.Result
 	}
 
-	taskSpec := currentTaskRun.TaskSpec
 	logger.Infow(fmt.Sprintf("Processing task %s", taskSpec.Type), []interface{}{"task", currentTaskRun.ID}...)
 
 	currentTaskRun.Result.Data = data

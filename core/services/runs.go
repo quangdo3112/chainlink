@@ -259,7 +259,8 @@ func QueueSleepingTask(
 		return fmt.Errorf("Attempting to resume sleeping run with non sleeping task %s", run.ID)
 	}
 
-	adapter, err := prepareAdapter(currentTaskRun, run.Overrides.Data, store)
+	taskSpec := currentTaskRun.TaskSpec
+	adapter, err := prepareAdapter(taskSpec, run.Overrides.Data, store)
 	if err != nil {
 		currentTaskRun.SetError(err)
 		run.SetError(err)
@@ -270,7 +271,7 @@ func QueueSleepingTask(
 		return performTaskSleep(run, currentTaskRun, sleepAdapter, store)
 	}
 
-	return fmt.Errorf("Attempting to resume non sleeping task for run %s (%s)", run.ID, currentTaskRun.TaskSpec.Type)
+	return fmt.Errorf("Attempting to resume non sleeping task for run %s (%s)", run.ID, taskSpec.Type)
 }
 
 func performTaskSleep(

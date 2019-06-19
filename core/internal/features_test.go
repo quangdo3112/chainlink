@@ -305,7 +305,7 @@ func TestIntegration_RunLog(t *testing.T) {
 			wantFinishedAt:   true,
 		},
 		{
-			name:             "ommered request block",
+			name:             "ommered request",
 			logBlockHash:     triggeringBlockHash,
 			receiptBlockHash: otherBlockHash,
 			wantStatus:       models.RunStatusErrored,
